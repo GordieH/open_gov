@@ -6,10 +6,9 @@ Must start zookeeper/kafka before running app, see below
 
 
 TODO:
-- edit userReps DB to include propublica ids
+- Add MongoDB support  
 - integrate Propublica's apis
 - move all data sources to AWS
-- Add universal ids to reps (from)
 - improve google civic api consumption at a local level (AdminstrativeArea1&2)
 - create a kafka consumer go script that reads in messages and writes to mysql db
 - check for duplicates on userRep edit function
@@ -18,6 +17,7 @@ TODO:
 - deploy to AWS EC2
 
 DONE:
+- edit userReps DB to include propublica ids  
 - in init: add mysql query to pull from representatives and switch from repDB to rep map
 - in init: add mysql queries to pull from user_favorite_reps, switch repGUID to string
 - set up kafka stream for adding/removing reps

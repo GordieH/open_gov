@@ -48,5 +48,9 @@ create kafka topic
 start kafka producer  
 `$ kafka-console-producer --broker-list localhost:9092 --topic test`  
 start kafka consumer  
-`$ kafka-console-consumer --bootstrap-server localhost:9092 --topic test --from-beginning`
+`$ kafka-console-consumer --bootstrap-server localhost:9092 --topic test --from-beginning`  
 
+# To Run Application:  
+`export ENV=<env>`  
+`go build -o ./bin`  
+`bin/open_gov`

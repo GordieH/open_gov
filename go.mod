@@ -11,8 +11,11 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocarina/gocsv v0.0.0-20201103164230-b291445e0dd2
+	github.com/joho/godotenv v1.3.0
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/segmentio/kafka-go v0.4.8
 	github.com/sirupsen/logrus v1.7.0
 	github.com/tkanos/gonfig v0.0.0-20181112185242-896f3d81fadf
 	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.5.2
+	gopkg.in/yaml.v2 v2.4.0
 )

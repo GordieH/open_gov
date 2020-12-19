@@ -387,7 +387,7 @@ func loadRepDB() map[string]Representative {
 
 	// create userReps map through csv file
 	records := []*userRepMap{}
-	userFileData, err := os.Open(filepath.Join(relativePath, "/test_data/user_favorite_reps.csv"))
+	userFileData, err := os.Open(filepath.Join(cfg.RelativePath, "/test_data/user_favorite_reps.csv"))
 	if err != nil {
 		panic(err)
 	}
@@ -402,7 +402,7 @@ func loadRepDB() map[string]Representative {
 
 	reps := []*Representative{}
 
-	in, err := os.Open(filepath.Join(relativePath, "/test_data/house_members.csv"))
+	in, err := os.Open(filepath.Join(cfg.RelativePath, "/test_data/house_members.csv"))
 	if err != nil {
 		panic(err)
 	}
@@ -415,7 +415,7 @@ func loadRepDB() map[string]Representative {
 		repMap[rep.GUID] = addRepToMap(rep)
 	}
 
-	in, err = os.Open(filepath.Join(relativePath, "/test_data/senate_members.csv"))
+	in, err = os.Open(filepath.Join(cfg.RelativePath, "/test_data/senate_members.csv"))
 	if err != nil {
 		panic(err)
 	}
@@ -517,11 +517,11 @@ var (
 	writer         *kafka.Writer
 	db             *sql.DB
 	userReps       = make(map[string][]string)
-	relativePath   = "/Users/gordiehammond/Documents/go/src/github.com/GordieH/open_gov"
+	//relativePath   = "/Users/gordiehammond/Documents/go/src/github.com/GordieH/open_gov"
 )
 
 func init() {
-	file, err := os.OpenFile(filepath.Join(relativePath, "logs/app.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filepath.Join(cfg.RelativePath, "logs/app.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
 		log.Out = file
 	} else {
@@ -570,7 +570,7 @@ func main() {
 	jwtMiddleWare = jwtMiddleware
 
 	r := gin.Default()
-	r.Use(static.Serve("/", static.LocalFile(filepath.Join(relativePath, "/views"), true)))
+	r.Use(static.Serve("/", static.LocalFile(filepath.Join(cfg.RelativePath, "/views"), true)))
 
 	// config := cors.DefaultConfig()
 	// config.AllowOrigins = []string{"*"}

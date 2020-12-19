@@ -164,9 +164,19 @@ class RepName extends React.Component {
   constructor(props) {
     super(props);
   }
+  removeRep(guid) {
+    console.log(guid)
+    $.post(`http://localhost:3000/api/localreps/edit?editTask=remove&user_guid=55ee03f2dcd8c8e46b91cbb2e70d9e&rep_guid=${guid}`, res => {
+      console.log(res)
+      this.setState({
+        reps: res
+      });
+    });
+  }
+
   render() {
     const localRep = this.props.localrep
-    console.log("repName: ", localRep)
+    // console.log("repName: ", localRep)
     return (
       <div className="col-xs-4">
         <div className="panel panel-default">
@@ -181,6 +191,7 @@ class RepName extends React.Component {
           <div className="panel-body joke-hld"><a href={localRep.gov_web}>Goverment Web Page</a> 
           <div> </div><a href={`https://www.twitter.com/${localRep.twitter}`}>Twitter</a></div>
         </div>
+      <button type="button" onClick={() => this.removeRep(localRep.guid)}>Remove Rep</button> 
       </div>
     );
   }

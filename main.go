@@ -8,12 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	// "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -71,12 +73,20 @@ type localRepResponse struct {
 
 // Representative ... object of representative
 type Representative struct {
-	GUID     string `json:"guid" binding:"required" csv:"id"`
-	Office   string `json:"office" csv:"title"`
-	Name     string `json:"name" binding:"required" csv:"first_name"`
-	LastName string `csv:"last_name"`
-	Location string `json:"location" csv:"state"`
-	Division string `json:"division" csv:"ocd_id"`
+	GUID                  string  `json:"guid" binding:"required" csv:"id"`
+	Office                string  `json:"office" csv:"title"`
+	Name                  string  `json:"name" binding:"required" csv:"first_name"`
+	LastName              string  `csv:"last_name"`
+	Location              string  `json:"location" csv:"state"`
+	Division              string  `json:"division" csv:"ocd_id"`
+	GovWebsite            string  `json:"gov_web" csv:"url"`
+	Twitter               string  `json:"twitter" csv:"twitter_account"`
+	TotalVotes            int     `json:"total_votes" csv:"total_votes"`
+	MissedVotes           int     `json:"missed_votes" csv:"missed_votes"`
+	PresentVotes          int     `json:"present_votes" csv:"present_votes"`
+	PercentMissedVotes    float64 `json:"percent_missed_votes"`
+	PercentPresentVotes   float64 `json:"percent_present_votes"`
+	PercentVotesWithParty float64 `json:"percent_votes_with_party" csv:"votes_with_party_pct"`
 }
 
 type userRepList struct {
@@ -85,8 +95,8 @@ type userRepList struct {
 }
 
 type userRepMap struct {
-	UserGUID string
-	RepGUID  string
+	UserGUID string `csv:"user_guid"`
+	RepGUID  string `csv:"rep_guid"`
 }
 
 //UserRepUpdate is the json response sent to kafka
@@ -375,38 +385,24 @@ func getPemCert(token *jwt.Token) (string, error) {
 
 func loadRepDB() map[string]Representative {
 
-	db, err := sql.Open("mysql", "root:11111111@tcp(127.0.0.1:3306)/open_gov")
-	defer db.Close()
+	// create userReps map through csv file
+	records := []*userRepMap{}
+	userFileData, err := os.Open(filepath.Join(relativePath, "/test_data/user_favorite_reps.csv"))
 	if err != nil {
-		fmt.Println(err.Error())
+		panic(err)
 	}
-
-	err = db.Ping()
-	if err != nil {
-		fmt.Println(err.Error())
+	defer userFileData.Close()
+	if err := gocsv.UnmarshalFile(userFileData, &records); err != nil {
+		panic(err)
 	}
-
-	userRows, err := db.Query("select * from open_gov.user_favorite_reps")
-	for userRows.Next() {
-		var row userRepMap
-		err = userRows.Scan(&row.UserGUID, &row.RepGUID)
+	for _, row := range records {
+		// fmt.Println(rep.LastName)
 		userReps[row.UserGUID] = append(userReps[row.UserGUID], row.RepGUID)
 	}
-	//fmt.Println(userReps)
-
-	repRows, err := db.Query("select * from open_gov.representatives")
-	for repRows.Next() {
-		var row Representative
-		err = repRows.Scan(&row.Office, &row.Name, &row.Location, &row.Division, &row.GUID)
-		//fmt.Println(row)
-		//fmt.Println(row.GUID)
-		repMap[row.GUID] = row
-	}
-	//fmt.Println(userReps)
 
 	reps := []*Representative{}
 
-	in, err := os.Open(filepath.Join(relativePath, "/data/house_members.csv"))
+	in, err := os.Open(filepath.Join(relativePath, "/test_data/house_members.csv"))
 	if err != nil {
 		panic(err)
 	}
@@ -419,7 +415,7 @@ func loadRepDB() map[string]Representative {
 		repMap[rep.GUID] = addRepToMap(rep)
 	}
 
-	in, err = os.Open(filepath.Join(relativePath, "/data/senate_members.csv"))
+	in, err = os.Open(filepath.Join(relativePath, "/test_data/senate_members.csv"))
 	if err != nil {
 		panic(err)
 	}
@@ -454,7 +450,7 @@ func loadDivisionRepDB(filePath string) map[string][]Representative {
 		tempName := line[1]
 		tempLocation := line[2]
 		tempDivision := line[3]
-		tempRep := Representative{tempGUID, tempOffice, tempName, tempName, tempLocation, tempDivision}
+		tempRep := Representative{tempGUID, tempOffice, tempName, tempName, tempLocation, tempDivision, tempName, tempName, 1, 1, 1, 0.1, 0.1, 0.1}
 
 		if currentDivision == line[3] {
 			tempRepList = append(tempRepList, tempRep)
@@ -495,22 +491,12 @@ func loadZipDivisionDB(filePath string) map[string][]string {
 }
 
 func addRepToMap(rep *Representative) Representative {
-	return Representative{rep.GUID, rep.Office, rep.Name, rep.LastName, rep.Location, rep.Division}
+	return Representative{rep.GUID, rep.Office, rep.Name, rep.LastName, rep.Location, rep.Division,
+		rep.GovWebsite, rep.Twitter, rep.TotalVotes, rep.MissedVotes, rep.PresentVotes,
+		math.Round(10000*float64(rep.MissedVotes)/float64(rep.TotalVotes)) / 100,
+		math.Round(10000*float64(rep.PresentVotes)/float64(rep.TotalVotes)) / 100,
+		rep.PercentVotesWithParty}
 }
-
-// func MapLocalRepsHandler(c *gin.Context) {
-// 	zipcode, _ := c.GetQuery("zipcode")
-// 	userGUID := "1234"
-// 	c.Header("Content-Type", "application/json")
-// 	var tempUserRepList []localRepResponse
-// 	for _, j := range userDB[userGUID] {
-// 		fmt.Println("j", j)
-// 		fmt.Println("Rep: ", localRepsDB[j].Name)
-// 		tempUserRepList = append(tempUserRepList, localRepsDB[j])
-// 	}
-// 	msg := map[string]interface{}{"Status": "Ok", "user_guid": userGUID, "users_rep_list": tempUserRepList}
-// 	c.JSON(http.StatusOK, msg)
-// }
 
 const (
 	// topic          = "user-rep-list"
@@ -543,9 +529,8 @@ func init() {
 	}
 	// Load in-memory maps for reference
 	repMap = loadRepDB()
-	println(repMap["D000197"].LastName)
-	divisionRepMap = loadDivisionRepDB(filepath.Join(relativePath, "/data/officials.csv"))
-	zipDivisionMap = loadZipDivisionDB(filepath.Join(relativePath, "/data/zip_divisions_db.csv"))
+	// divisionRepMap = loadDivisionRepDB(filepath.Join(relativePath, "/data/officials.csv"))
+	// zipDivisionMap = loadZipDivisionDB(filepath.Join(relativePath, "/data/zip_divisions_db.csv"))
 
 	log.Info("Starting kafka producer...")
 	writer = kafka.NewWriter(kafka.WriterConfig{
@@ -587,21 +572,12 @@ func main() {
 	r := gin.Default()
 	r.Use(static.Serve("/", static.LocalFile(filepath.Join(relativePath, "/views"), true)))
 
-	userDB["1234"] = []int{2, 3, 4}
-	userDB["MAGA"] = []int{0, 1}
-
-	// fmt.Println(divisionRepMap["ocd-division/country:us/state:co"])
-	// fmt.Println(repMap["4a48e646caf9b30d8245038215efe4"])
-	// fmt.Println("")
-	// fmt.Println(zipDivisionMap["80204"])
-
 	// config := cors.DefaultConfig()
 	// config.AllowOrigins = []string{"*"}
 
 	// r.Use(cors.New(config))
 	// log.Info("Starting Application")
 	// r.GET("/ready", getStatus)
-	// r.GET("localReps", localRepresentatives)
 
 	// Setup route group for the API
 	api := r.Group("/api")
@@ -617,6 +593,6 @@ func main() {
 	// api.POST("/localreps/add", authMiddleware(), AddLocalRep)
 	api.POST("/localreps/edit", EditLocalRep)
 	api.GET("/localreps/lookup", localRepLookup)
-	api.GET("/localreps/google/lookup", googleRepLookup)
+	// api.GET("/localreps/google/lookup", googleRepLookup) // disabled to remove data dependency
 	r.Run(":3000")
 }

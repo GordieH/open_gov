@@ -176,6 +176,10 @@ class RepName extends React.Component {
           </div>
           <div className="panel-body joke-hld">Office: {localRep.office}</div>
           <div className="panel-body joke-hld">Location: {localRep.location}</div>
+          <div className="panel-body joke-hld">Percent Votes Missed: {localRep.percent_missed_votes}%</div>
+          <div className="panel-body joke-hld">Percent Votes With Party: {localRep.percent_votes_with_party}%</div>
+          <div className="panel-body joke-hld"><a href={localRep.gov_web}>Goverment Web Page</a> 
+          <div> </div><a href={`https://www.twitter.com/${localRep.twitter}`}>Twitter</a></div>
         </div>
       </div>
     );

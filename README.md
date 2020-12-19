@@ -28,6 +28,7 @@ Install instructions
 - Install Postman (for API testing): https://www.postman.com/downloads/  
 - Install MySQL (for local DB): https://dev.mysql.com/downloads/mysql/  
 - Install MySQL Workbench: https://downloads.mysql.com/archives/workbench/  
+- Install MongoDB: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/#install-mongodb-community-edition  
 - Install Kafka/Zookeeper (for Mac):  
     - FIRST:   
     `brew tap adoptopenjdk/openjdkbrew`  

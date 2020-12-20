@@ -1,4 +1,3 @@
-
 const AUTH0_CLIENT_ID = "9NH1MWLWcM54FRBn0Xvo2dOEFaJKG3gr";
 const AUTH0_DOMAIN = "dev-vb3a8shg.us.auth0.com";
 const AUTH0_CALLBACK_URL = location.href;
@@ -8,7 +7,7 @@ class App extends React.Component {
   parseHash() {
     this.auth0 = new auth0.WebAuth({
       domain: AUTH0_DOMAIN,
-      clientID: AUTH0_CLIENT_ID
+      clientID: AUTH0_CLIENT_ID,
     });
     this.auth0.parseHash(window.location.hash, (err, authResult) => {
       if (err) {
@@ -42,7 +41,7 @@ class App extends React.Component {
             "Bearer " + localStorage.getItem("access_token")
           );
         }
-      }
+      },
     });
   }
 
@@ -82,7 +81,7 @@ class Home extends React.Component {
       scope: "openid profile",
       audience: AUTH0_API_AUDIENCE,
       responseType: "token id_token",
-      redirectUri: AUTH0_CALLBACK_URL
+      redirectUri: AUTH0_CALLBACK_URL,
     });
     this.WebAuth.authorize();
   }
@@ -113,7 +112,7 @@ class LoginHome extends React.Component {
     super(props);
     this.state = {
       user_guid: null,
-      reps: []
+      reps: [],
     };
   }
 
@@ -122,28 +121,28 @@ class LoginHome extends React.Component {
     localStorage.removeItem("access_token");
     localStorage.removeItem("profile");
     location.reload();
-  }
+  };
 
   serverRequest = () => {
-    $.get("http://localhost:3000/api/localreps", res => {
+    $.get("http://localhost:3000/api/localreps", (res) => {
       this.setState({
         user_guid: res.user_guid,
-        reps: res.users_rep_list
+        reps: res.users_rep_list,
       });
     });
-  }
+  };
 
-  deleteInParent = (guid) => {
-    // TODO: I don't think we need to make a network call here, but this depends on how we want to store a user's
-    // modified reps - in a database or just in local state
+  handleDelete = (guid) => {
+    // TODO: I don't think we need to make a network call here, depends on
+    // if we want to store a user's modified reps in a database or in local state
     // $.post(`http://localhost:3000/api/localreps/edit?editTask=remove&user_guid=55ee03f2dcd8c8e46b91cbb2e70d9e&rep_guid=${guid}`, res => {
     //    return res;
     // });
-    const updatedReps = this.state.reps.filter(rep => rep.guid !== guid);
+    const updatedReps = this.state.reps.filter((rep) => rep.guid !== guid);
     this.setState({
       reps: updatedReps,
     });
-  }
+  };
 
   componentDidMount() {
     this.serverRequest();
@@ -158,19 +157,25 @@ class LoginHome extends React.Component {
           <a onClick={this.logout}>Log out</a>
         </span>
         <h2>Open-Gov</h2>
-    <p>Hey user</p>
+        <p>Hey user</p>
         <div className="row">
           <div className="container">
-            {userList && (userList.map((localRep, i) => {
-              return <RepName key={i} localRep={localRep} deleteRep={this.deleteInParent} />;
-            }))}
+            {userList &&
+              userList.map((localRep, i) => {
+                return (
+                  <RepName
+                    key={i}
+                    localRep={localRep}
+                    deleteRep={this.handleDelete}
+                  />
+                );
+              })}
           </div>
         </div>
       </div>
     );
   }
 }
-
 
 class RepName extends React.Component {
   constructor(props) {
@@ -179,7 +184,7 @@ class RepName extends React.Component {
 
   deleteRep = (id) => {
     this.props.deleteRep(id);
-  }
+  };
 
   render() {
     const { localRep } = this.props;
@@ -188,17 +193,28 @@ class RepName extends React.Component {
       <div className="col-xs-4">
         <div className="panel panel-default">
           <div className="panel-heading">
-          {localRep.name}{" "}{localRep.LastName}{" "}
+            {localRep.name} {localRep.LastName}{" "}
             <span className="pull-right"></span>
           </div>
           <div className="panel-body joke-hld">Office: {localRep.office}</div>
-          <div className="panel-body joke-hld">Location: {localRep.location}</div>
-          <div className="panel-body joke-hld">Percent Votes Missed: {localRep.percent_missed_votes}%</div>
-          <div className="panel-body joke-hld">Percent Votes With Party: {localRep.percent_votes_with_party}%</div>
-          <div className="panel-body joke-hld"><a href={localRep.gov_web}>Goverment Web Page</a> 
-          <div> </div><a href={`https://www.twitter.com/${localRep.twitter}`}>Twitter</a></div>
+          <div className="panel-body joke-hld">
+            Location: {localRep.location}
+          </div>
+          <div className="panel-body joke-hld">
+            Percent Votes Missed: {localRep.percent_missed_votes}%
+          </div>
+          <div className="panel-body joke-hld">
+            Percent Votes With Party: {localRep.percent_votes_with_party}%
+          </div>
+          <div className="panel-body joke-hld">
+            <a href={localRep.gov_web}>Goverment Web Page</a>
+            <div> </div>
+            <a href={`https://www.twitter.com/${localRep.twitter}`}>Twitter</a>
+          </div>
         </div>
-      <button type="button" onClick={() => this.deleteRep(localRep.guid)}>Remove Rep</button> 
+        <button type="button" onClick={() => this.deleteRep(localRep.guid)}>
+          Remove Rep
+        </button>
       </div>
     );
   }

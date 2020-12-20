@@ -132,6 +132,11 @@ class LoginHome extends React.Component {
     });
   };
 
+  handleAdd = (repName) => {
+    console.log('repName: ', repName)
+    // TODO: Add API call here to get all of the rep's information
+  };
+
   handleDelete = (guid) => {
     // TODO: I don't think we need to make a network call here, depends on
     // if we want to store a user's modified reps in a database or in local state
@@ -158,12 +163,14 @@ class LoginHome extends React.Component {
         </span>
         <h2>Open-Gov</h2>
         <p>Hey user</p>
+        <RepNameForm addRep={this.handleAdd} />
+        <br />
         <div className="row">
           <div className="container">
             {userList &&
               userList.map((localRep, i) => {
                 return (
-                  <RepName
+                  <RepCard
                     key={i}
                     localRep={localRep}
                     deleteRep={this.handleDelete}
@@ -176,8 +183,38 @@ class LoginHome extends React.Component {
     );
   }
 }
+class RepNameForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      input: '',
+    }
+  }
 
-class RepName extends React.Component {
+  handleChange = (event) => {
+    this.setState({
+      input: event.target.value,
+    });
+  }
+
+  handleSubmit = () => {
+    this.props.addRep(this.state.input);
+  }
+
+  render() {
+    return (
+      <form onSubmit={() => this.handleSubmit()}>
+        <label>
+          Enter a representative's name to add: 
+          <input type="text" value={this.state.value} onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+
+class RepCard extends React.Component {
   constructor(props) {
     super(props);
   }

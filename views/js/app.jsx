@@ -74,6 +74,7 @@ class Home extends React.Component {
     super(props);
     this.authenticate = this.authenticate.bind(this);
   }
+
   authenticate() {
     this.WebAuth = new auth0.WebAuth({
       domain: AUTH0_DOMAIN,
@@ -111,25 +112,36 @@ class LoginHome extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-        reps: []
+      user_guid: null,
+      reps: []
     };
-
-    this.serverRequest = this.serverRequest.bind(this);
-    this.logout = this.logout.bind(this);
   }
 
-  logout() {
+  logout = () => {
     localStorage.removeItem("id_token");
     localStorage.removeItem("access_token");
     localStorage.removeItem("profile");
     location.reload();
   }
 
-  serverRequest() {
+  serverRequest = () => {
     $.get("http://localhost:3000/api/localreps", res => {
       this.setState({
-        reps: res
+        user_guid: res.user_guid,
+        reps: res.users_rep_list
       });
+    });
+  }
+
+  deleteInParent = (guid) => {
+    // TODO: I don't think we need to make a network call here, but this depends on how we want to store a user's
+    // modified reps - in a database or just in local state
+    // $.post(`http://localhost:3000/api/localreps/edit?editTask=remove&user_guid=55ee03f2dcd8c8e46b91cbb2e70d9e&rep_guid=${guid}`, res => {
+    //    return res;
+    // });
+    const updatedReps = this.state.reps.filter(rep => rep.guid !== guid);
+    this.setState({
+      reps: updatedReps,
     });
   }
 
@@ -138,7 +150,7 @@ class LoginHome extends React.Component {
   }
 
   render() {
-    const userList = this.state.reps.users_rep_list;
+    const userList = this.state.reps;
     return (
       <div className="container">
         <br />
@@ -149,8 +161,8 @@ class LoginHome extends React.Component {
     <p>Hey user</p>
         <div className="row">
           <div className="container">
-            {userList && (userList.map(function(localrep, i) {
-              return <RepName key={i} localrep={localrep} />;
+            {userList && (userList.map((localRep, i) => {
+              return <RepName key={i} localRep={localRep} deleteRep={this.deleteInParent} />;
             }))}
           </div>
         </div>
@@ -164,19 +176,14 @@ class RepName extends React.Component {
   constructor(props) {
     super(props);
   }
-  removeRep(guid) {
-    console.log(guid)
-    $.post(`http://localhost:3000/api/localreps/edit?editTask=remove&user_guid=55ee03f2dcd8c8e46b91cbb2e70d9e&rep_guid=${guid}`, res => {
-      console.log(res)
-      this.setState({
-        reps: res
-      });
-    });
+
+  deleteRep = (id) => {
+    this.props.deleteRep(id);
   }
 
   render() {
-    const localRep = this.props.localrep
-    // console.log("repName: ", localRep)
+    const { localRep } = this.props;
+
     return (
       <div className="col-xs-4">
         <div className="panel panel-default">
@@ -191,9 +198,10 @@ class RepName extends React.Component {
           <div className="panel-body joke-hld"><a href={localRep.gov_web}>Goverment Web Page</a> 
           <div> </div><a href={`https://www.twitter.com/${localRep.twitter}`}>Twitter</a></div>
         </div>
-      <button type="button" onClick={() => this.removeRep(localRep.guid)}>Remove Rep</button> 
+      <button type="button" onClick={() => this.deleteRep(localRep.guid)}>Remove Rep</button> 
       </div>
     );
   }
 }
+
 ReactDOM.render(<App />, document.getElementById("app"));

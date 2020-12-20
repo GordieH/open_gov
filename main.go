@@ -598,6 +598,7 @@ func main() {
 	// api.POST("/localreps/add", authMiddleware(), AddLocalRep)
 	api.POST("/localreps/edit", EditLocalRep)
 	api.GET("/localreps/lookup", localRepLookup)
+	api.GET("/topreps", getTopReps)
 	// api.GET("/localreps/google/lookup", googleRepLookup) // disabled to remove data dependency
 	r.Run(":3000")
 }

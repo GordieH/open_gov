@@ -135,9 +135,9 @@ class LoginHome extends React.Component {
   handleDelete = (guid) => {
     // TODO: I don't think we need to make a network call here, depends on
     // if we want to store a user's modified reps in a database or in local state
-    // $.post(`http://localhost:3000/api/localreps/edit?editTask=remove&user_guid=55ee03f2dcd8c8e46b91cbb2e70d9e&rep_guid=${guid}`, res => {
-    //    return res;
-    // });
+    $.post(`http://localhost:3000/api/localreps/edit?editTask=remove&user_guid=55ee03f2dcd8c8e46b91cbb2e70d9e&rep_guid=${guid}`, res => {
+       return res;
+    });
     const updatedReps = this.state.reps.filter((rep) => rep.guid !== guid);
     this.setState({
       reps: updatedReps,

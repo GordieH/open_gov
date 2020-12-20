@@ -314,12 +314,14 @@ func EditLocalRep(c *gin.Context) {
 
 	userRepUpdateResponse, _ := json.Marshal(userRepUpdate)
 
-	err := writer.WriteMessages(context.Background(), kafka.Message{
-		//Key: []byte(repGUID),
-		Value: []byte(userRepUpdateResponse),
-	})
-	if err != nil {
-		panic("could not write message " + err.Error())
+	if enableKafka {
+		err := writer.WriteMessages(context.Background(), kafka.Message{
+			//Key: []byte(repGUID),
+			Value: []byte(userRepUpdateResponse),
+		})
+		if err != nil {
+			panic("could not write message " + err.Error())
+		}
 	}
 
 	msg := map[string]interface{}{"Status": "Ok", "user_guid": userGUID, "users_rep_list": userReps[userGUID]}
@@ -517,6 +519,7 @@ var (
 	writer         *kafka.Writer
 	db             *sql.DB
 	userReps       = make(map[string][]string)
+	enableKafka    = false
 	//relativePath   = "/Users/gordiehammond/Documents/go/src/github.com/GordieH/open_gov"
 )
 
@@ -532,11 +535,14 @@ func init() {
 	// divisionRepMap = loadDivisionRepDB(filepath.Join(relativePath, "/data/officials.csv"))
 	// zipDivisionMap = loadZipDivisionDB(filepath.Join(relativePath, "/data/zip_divisions_db.csv"))
 
-	log.Info("Starting kafka producer...")
-	writer = kafka.NewWriter(kafka.WriterConfig{
-		Brokers: []string{broker1Address},
-		Topic:   topic,
-	})
+	if enableKafka {
+		log.Info("Starting kafka producer...")
+		writer = kafka.NewWriter(kafka.WriterConfig{
+			Brokers: []string{broker1Address},
+			Topic:   topic,
+		})
+	}
+
 }
 
 func main() {

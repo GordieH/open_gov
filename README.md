@@ -29,7 +29,7 @@ Install instructions
 - Install MySQL (for local DB): https://dev.mysql.com/downloads/mysql/  
 - Install MySQL Workbench: https://downloads.mysql.com/archives/workbench/  
 - Install MongoDB: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/#install-mongodb-community-edition  
-- Install Kafka/Zookeeper (for Mac):  
+- (enableKafka flag avaiable if you don't want to install kafka)Install Kafka/Zookeeper (for Mac):  
     - FIRST:   
     `brew tap adoptopenjdk/openjdkbrew`  
     `cask install adoptopenjdk8`  
